@@ -1,15 +1,15 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const http = require('http'); // Tích hợp thêm module http để mở cổng web
 
-// Token bot Telegram của bạn
-const token = '8878323011:AAGkV9WU9rQB-7OeGwdWg0bjQV0lnE129Aw'; 
-// Token API Link4M (Lấy từ ảnh bạn gửi)
-const link4mApiToken = '6a182340f97aed248b6eb29b';
+// Token cấu hình (Khuyên dùng: Nên đưa vào Environment Variables trên Render như ảnh trước)
+const token = process.env.BOT_TOKEN || '8878323011:AAGkV9WU9rQB-7OeGwdWg0bjQV0lnE129Aw'; 
+const link4mApiToken = process.env.LINK4M_TOKEN || '6a182340f97aed248b6eb29b';
 
 const botName = 'Link4M_Credit_Bot';
 const bot = new TelegramBot(token, { polling: true });
 
-// Lưu trữ dữ liệu người dùng tạm thời
+// Lưu trữ dữ liệu người dùng tạm thời (Lưu ý: Render restart sẽ mất dữ liệu này, về lâu dài nên dùng Database)
 const usersData = {};
 
 const getTodayStr = () => {
@@ -126,6 +126,19 @@ bot.on('message', async (msg) => {
     else if (text === '👤 Thông tin') {
         bot.sendMessage(chatId, `👤 **Thông tin tài khoản:**\n- Credit hiện có: ${usersData[chatId].credits}\n- Đã nhận hôm nay: ${usersData[chatId].dailyEarned}/2`, { parse_mode: 'Markdown' });
     }
+});
+
+// --------------------------------------------------
+// CẤU HÌNH WEB SERVER ĐỂ TREO VÀ PING AUTO ĐÂY NÈ BẠN:
+// --------------------------------------------------
+const PORT = process.env.PORT || 3000;
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Bot Telegram đang hoạt động ổn định và liên tục! 🚀');
+});
+
+server.listen(PORT, () => {
+    console.log(`[Render Web Service] Server đang lắng nghe trên cổng: ${PORT}`);
 });
 
 console.log(`[Khởi động] Hệ thống API tự động đang chạy...`);
